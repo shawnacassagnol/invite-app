@@ -1,0 +1,87 @@
+/* ===== Global styles for the whole app ===== */
+
+:root {
+  /* Color palette — change these once, applies everywhere */
+  --primary: #6a1b9a;         /* purple */
+  --primary-dark: #4a148c;
+  --accent: #00897b;          /* teal */
+  --green: #43a047;
+  --red: #e53935;
+  --orange: #fb8c00;
+  --gray: #9e9e9e;
+  --bg: #f4f2f8;
+  --card-bg: #ffffff;
+  --text: #2c2c2c;
+  --text-light: #666;
+  --border: #e0e0e0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* ===== Reusable button styles ===== */
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: opacity 0.15s, transform 0.05s;
+}
+.btn:hover { opacity: 0.9; }
+.btn:active { transform: scale(0.97); }
+
+.btn-primary   { background: var(--primary); color: white; }
+.btn-accent    { background: var(--accent); color: white; }
+.btn-green     { background: var(--green); color: white; }
+.btn-red       { background: var(--red); color: white; }
+.btn-orange    { background: var(--orange); color: white; }
+.btn-gray      { background: var(--gray); color: white; }
+.btn-outline   { background: #eee; color: var(--text); }
+.btn-sm        { padding: 5px 10px; font-size: 13px; }
+
+/* ===== Form inputs ===== */
+.input {
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 15px;
+  width: 100%;
+}
+.input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+/* ===== Cards ===== */
+.card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin: 16px 0;
+}
+
+/* ===== Page container ===== */
+.container {
+  max-width: 640px;
+  margin: 40px auto;
+  padding: 0 16px;
+}
+
+/* ===== Links ===== */
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+a:hover { text-decoration: underline; }

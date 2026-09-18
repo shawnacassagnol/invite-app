@@ -1,0 +1,176 @@
+# 🎉 InviteMe
+
+A full-stack event invitation app — create events, invite guests, track RSVPs, and see event locations on a map. Inspired by Evite.
+
+Built with an **Angular** frontend, a **.NET** backend, and a **SQLite** database. Everything persists, and the app is organized into multiple pages with real routing.
+
+---
+
+## Features
+
+- **Create, edit, and delete events** — full CRUD with a real database
+- **Two views** — a list view and an interactive monthly **calendar** where event days are highlighted
+- **Event detail pages** — each event has its own URL (`/event/1`) via Angular routing
+- **RSVP tracking** — guests respond Yes / No / Maybe, and counts are saved
+- **Guest lists** — add guests (name, email, phone) to each event, backed by a related database table
+- **Send invites** — mark all guests as invited (structured for real email/SMS integration later)
+- **Event schedules/agendas** — add, edit, and remove timeline items (e.g. "3:00 PM — Guests arrive") for each event
+- **Mini maps** — each event's location is geocoded and shown on an embedded OpenStreetMap (no API key required)
+- **Shareable public invite links** — generate an unguessable link (`/invite/{token}`) that guests can open to see a read-only event view and RSVP, without any access to admin controls or the guest list
+- **Persistent data** — everything is stored in SQLite and survives restarts
+- **Clean, responsive UI** — organized with CSS variables and reusable component styles
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | Angular (TypeScript, HTML, CSS), Angular Router |
+| **Backend** | .NET (ASP.NET Core Minimal API, C#) |
+| **Database** | SQLite via Entity Framework Core |
+| **Maps** | OpenStreetMap embed + Nominatim geocoding (no key needed) |
+
+---
+
+## Architecture
+
+```
+Browser (Angular SPA)
+   │   List / Calendar page  (/)
+   │   Event detail page     (/event/:id)      ← organizer view (full control)
+   │   Public invite page    (/invite/:token)  ← guest view (read-only + RSVP)
+   │
+   │  REST API calls (GET, POST, PUT, DELETE)
+   ▼
+.NET Backend (ASP.NET Core)
+   │
+   │  Entity Framework Core
+   ▼
+SQLite database (invite.db)
+   ├── Events table
+   ├── Guests table          (one-to-many: an Event has many Guests)
+   └── ScheduleItems table   (one-to-many: an Event has many schedule items)
+```
+
+---
+
+## Data Model
+
+The app uses two related tables (a **one-to-many** relationship):
+
+```
+Events                          Guests
+┌────┬──────────┬──────┐       ┌────┬────────┬──────────┬─────────┐
+│ Id │ Title    │ ...  │       │ Id │ Name   │ Email    │ EventId │
+├────┼──────────┼──────┤       ├────┼────────┼──────────┼─────────┤
+│ 1  │ Party    │      │◄──────┤ 1  │ Alex   │ alex@... │   1     │
+└────┴──────────┴──────┘       └────┴────────┴──────────┴─────────┘
+```
+
+Deleting an event automatically deletes its guests (cascade delete).
+
+---
+
+## Running It Locally
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v18+)
+- [Angular CLI](https://angular.dev/tools/cli) — `npm install -g @angular/cli`
+- [.NET SDK](https://dotnet.microsoft.com/download) (v8+)
+
+### 1. Start the Backend
+
+```bash
+cd backend
+dotnet run --launch-profile http
+```
+
+The API runs at `http://localhost:5200`. On first run it creates the SQLite database and seeds a couple of sample events.
+
+### 2. Start the Frontend
+
+In a separate terminal:
+
+```bash
+cd frontend
+npm install        # first time only
+ng serve
+```
+
+The app runs at `http://localhost:4200`.
+
+### 3. Open the App
+
+Go to [http://localhost:4200](http://localhost:4200).
+
+> **Note:** Both the backend and frontend must be running at the same time.
+
+---
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/events` | List all events |
+| GET | `/api/events/{id}` | Get one event |
+| POST | `/api/events` | Create an event |
+| PUT | `/api/events/{id}` | Edit an event |
+| DELETE | `/api/events/{id}` | Delete an event |
+| PUT | `/api/events/{id}/rsvp/{response}` | Add an RSVP (yes/no/maybe) |
+| GET | `/api/events/{id}/guests` | List an event's guests |
+| POST | `/api/events/{id}/guests` | Add a guest |
+| DELETE | `/api/guests/{guestId}` | Remove a guest |
+| POST | `/api/events/{id}/send-invites` | Mark all guests as invited |
+| GET | `/api/events/{id}/schedule` | List an event's schedule items |
+| POST | `/api/events/{id}/schedule` | Add a schedule item |
+| PUT | `/api/schedule/{itemId}` | Edit a schedule item |
+| DELETE | `/api/schedule/{itemId}` | Remove a schedule item |
+| GET | `/api/invite/{token}` | **Public** read-only event lookup by share token (no guest list) |
+| PUT | `/api/invite/{token}/rsvp/{response}` | **Public** RSVP via a share link |
+
+---
+
+## Project Structure
+
+```
+invite-app/
+├── backend/
+│   ├── Program.cs            # API endpoints
+│   ├── Event.cs              # Event data model
+│   ├── Guest.cs              # Guest data model
+│   └── AppDbContext.cs       # Database context (EF Core)
+├── frontend/
+│   └── src/app/
+│       ├── app.component.*           # Shell (holds the router outlet)
+│       ├── app.routes.ts             # Route definitions
+│       ├── models.ts                 # Shared Event/Guest interfaces
+│       ├── event-list.component.*    # Home page (list + calendar + add)
+│       ├── event-detail.component.*  # Event page (RSVP, guests, map, edit, share)
+│       └── public-invite.component.* # Public read-only invite page (/invite/:token)
+└── README.md
+```
+
+---
+
+## What I Learned Building This
+
+- **Full CRUD** operations across all four HTTP methods (GET, POST, PUT, DELETE)
+- **Database persistence** with SQLite and Entity Framework Core
+- **One-to-many relationships** between database tables (Events → Guests)
+- **Angular routing** — multiple pages, route parameters, and navigation
+- **Component architecture** — splitting a single-page app into reusable page components
+- **Consuming external APIs** — geocoding and embedded maps
+- **Handling browser security** — Angular's DomSanitizer for safe iframe embeds
+- **Share tokens & authorization** — unguessable public links and serving a *subset* of data with limited permissions (guest view vs. organizer view)
+- **Separation of concerns** — clean HTML/CSS/TypeScript organization with CSS variables
+- **Full-stack integration** — connecting an Angular frontend to a .NET backend with CORS
+
+---
+
+## Possible Future Enhancements
+
+- Real email/SMS invite delivery (SendGrid / Twilio)
+- User accounts and authentication
+- Named RSVP tracking (which guest responded what)

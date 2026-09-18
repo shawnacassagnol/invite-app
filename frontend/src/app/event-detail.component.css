@@ -1,0 +1,123 @@
+.back-link {
+  display: inline-block;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.event-header h1 {
+  font-size: 30px;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+.event-meta {
+  color: var(--text-light);
+  font-size: 17px;
+  margin: 4px 0;
+}
+.event-desc {
+  font-size: 16px;
+  margin: 12px 0;
+}
+
+/* Section panels */
+.panel {
+  margin: 20px 0;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  background: white;
+}
+.panel h3 {
+  margin-top: 0;
+}
+.panel-guests {
+  background: #f6eefb;
+}
+.panel-schedule {
+  background: #e8f5f3;
+}
+
+/* Schedule rows */
+.schedule-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.schedule-time {
+  font-weight: 600;
+  color: var(--accent);
+  min-width: 80px;
+}
+.schedule-activity {
+  flex: 1;
+}
+
+.rsvp-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Map */
+.map-frame {
+  width: 100%;
+  height: 260px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-top: 16px;
+}
+
+/* Guest rows */
+.guest-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.guest-info .sub {
+  color: var(--text-light);
+  font-size: 13px;
+}
+.guest-info .invited {
+  color: var(--green);
+  font-size: 13px;
+}
+
+.guest-form {
+  margin-top: 14px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.guest-form .input {
+  width: auto;
+  flex: 1;
+  min-width: 120px;
+}
+
+.invite-msg {
+  margin-left: 10px;
+  color: var(--green);
+  font-weight: 600;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+.form-group label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-light);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.empty-msg {
+  color: var(--gray);
+  font-style: italic;
+  font-size: 14px;
+}

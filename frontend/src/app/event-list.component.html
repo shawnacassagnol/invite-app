@@ -1,0 +1,86 @@
+<div class="container">
+
+  <h1 class="app-title">🎉 InviteMe</h1>
+
+  <!-- View toggle -->
+  <div class="toggle-group">
+    <button class="toggle-btn" [class.active]="view === 'list'" (click)="setView('list')">List View</button>
+    <button class="toggle-btn" [class.active]="view === 'calendar'" (click)="setView('calendar')">Calendar View</button>
+  </div>
+
+  <!-- Add Event -->
+  <button class="btn btn-green" (click)="toggleForm()">
+    {{ showForm ? 'Cancel' : '+ Add Event' }}
+  </button>
+
+  <div *ngIf="showForm" class="card">
+    <h3 style="margin-top: 0;">New Event</h3>
+    <div class="form-group">
+      <label>Title *</label>
+      <input class="input" [(ngModel)]="newTitle" placeholder="e.g. Birthday Party">
+    </div>
+    <div class="form-group">
+      <label>Date *</label>
+      <input class="input" [(ngModel)]="newDate" type="date">
+    </div>
+    <div class="form-group">
+      <label>Location</label>
+      <input class="input" [(ngModel)]="newLocation" placeholder="e.g. Atlanta, GA">
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea class="input" [(ngModel)]="newDescription" placeholder="Details..." style="min-height: 60px;"></textarea>
+    </div>
+    <button class="btn btn-primary" (click)="addEvent()">Save Event</button>
+  </div>
+
+  <!-- ============ LIST VIEW ============ -->
+  <div *ngIf="view === 'list'">
+    <h2>Your Events</h2>
+    <div *ngFor="let event of events" class="event-card">
+      <h3>
+        <a [routerLink]="['/event', event.id]">{{ event.title }}</a>
+      </h3>
+      <p class="event-meta">📅 {{ event.date }}</p>
+      <p class="event-meta">📍 {{ event.location }}</p>
+      <p class="event-desc">{{ event.description }}</p>
+      <div class="card-actions">
+        <a class="btn btn-primary" [routerLink]="['/event', event.id]">View Details →</a>
+        <button class="btn btn-gray" (click)="deleteEvent(event.id)">Delete</button>
+      </div>
+    </div>
+    <p *ngIf="events.length === 0" class="empty-msg">No events yet.</p>
+  </div>
+
+  <!-- ============ CALENDAR VIEW ============ -->
+  <div *ngIf="view === 'calendar'">
+    <div class="calendar-header">
+      <button class="btn btn-outline" (click)="prevMonth()">&lt; Prev</button>
+      <h2 style="margin: 0;">{{ monthNames[currentMonth] }} {{ currentYear }}</h2>
+      <button class="btn btn-outline" (click)="nextMonth()">Next &gt;</button>
+    </div>
+    <div class="calendar-grid">
+      <div *ngFor="let wd of weekDays" class="weekday">{{ wd }}</div>
+      <div *ngFor="let cell of calendarDays"
+           (click)="selectDay(cell)"
+           class="day-cell"
+           [class.blank]="!cell.day"
+           [class.has-event]="cell.events.length > 0">
+        <div>{{ cell.day }}</div>
+        <div *ngIf="cell.events.length > 0" class="event-dot">•</div>
+      </div>
+    </div>
+
+    <div *ngIf="selectedDay && selectedDay.events.length > 0" class="card">
+      <h3 style="margin-top: 0;">Events on {{ monthNames[currentMonth] }} {{ selectedDay.day }}</h3>
+      <div *ngFor="let event of selectedDay.events" style="margin-bottom: 10px;">
+        <a [routerLink]="['/event', event.id]" style="font-weight: 600;">{{ event.title }}</a>
+        <p class="event-meta">📍 {{ event.location }}</p>
+      </div>
+    </div>
+    <p *ngIf="selectedDay && selectedDay.events.length === 0" class="empty-msg" style="margin-top: 20px;">
+      No events on {{ monthNames[currentMonth] }} {{ selectedDay.day }}.
+    </p>
+  </div>
+
+</div>

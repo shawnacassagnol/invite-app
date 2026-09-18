@@ -1,0 +1,60 @@
+<div class="container">
+
+  <!-- ===== NOT FOUND STATE ===== -->
+  <div *ngIf="notFound" class="panel not-found">
+    <h1>😕 Invite not found</h1>
+    <p>This invite link is invalid or has expired. Double-check the link with whoever sent it to you.</p>
+  </div>
+
+  <!-- ===== LOADING STATE ===== -->
+  <p *ngIf="!event && !notFound" class="empty-msg" style="margin-top: 20px;">Loading invite...</p>
+
+  <!-- ===== INVITE VIEW (read-only) ===== -->
+  <div *ngIf="event">
+
+    <!-- Header -->
+    <div class="event-header">
+      <p class="invite-banner">You're invited! 🎉</p>
+      <h1>{{ event.title }}</h1>
+      <p class="event-meta">📅 {{ event.date }}</p>
+      <p class="event-meta">📍 {{ event.location }}</p>
+      <p class="event-desc">{{ event.description }}</p>
+
+      <!-- Mini map -->
+      <div *ngIf="mapUrl">
+        <iframe [src]="mapUrl" class="map-frame"></iframe>
+      </div>
+    </div>
+
+    <!-- Schedule / Agenda (read-only) -->
+    <div class="panel panel-schedule" *ngIf="event.schedule && event.schedule.length > 0">
+      <h3>🗓️ Schedule</h3>
+      <div *ngFor="let item of event.schedule" class="schedule-row">
+        <span class="schedule-time">{{ item.time }}</span>
+        <span class="schedule-activity">{{ item.activity }}</span>
+      </div>
+    </div>
+
+    <!-- RSVP -->
+    <div class="panel">
+      <h3>Will you be there?</h3>
+
+      <!-- Before responding -->
+      <div *ngIf="!rsvpDone" class="rsvp-row">
+        <button class="btn btn-green" (click)="rsvp('yes')">✅ Yes</button>
+        <button class="btn btn-red" (click)="rsvp('no')">❌ No</button>
+        <button class="btn btn-orange" (click)="rsvp('maybe')">❓ Maybe</button>
+      </div>
+
+      <!-- After responding -->
+      <div *ngIf="rsvpDone" class="thanks">
+        <p>🙏 Thanks for your response!</p>
+        <p class="sub">
+          So far: {{ event.yes }} yes · {{ event.no }} no · {{ event.maybe }} maybe
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+</div>
