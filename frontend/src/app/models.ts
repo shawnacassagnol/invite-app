@@ -20,6 +20,7 @@ export interface Guest {
   email: string;
   phone: string;
   invited: boolean;
+  rsvp: string;      // "pending" | "yes" | "no" | "maybe"
   eventId: number;
 }
 

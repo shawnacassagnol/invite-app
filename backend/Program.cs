@@ -36,10 +36,19 @@ using (var scope = app.Services.CreateScope())
 
     if (!db.Events.Any())
     {
-        db.Events.Add(new Event { Title = "Team Lunch", Date = "2026-09-20", Location = "Atlanta, GA", Description = "Casual team lunch." });
-        db.Events.Add(new Event { Title = "Birthday Party", Date = "2026-09-12", Location = "Snellville, GA", Description = "Flowers and butterflies theme!" });
+        db.Events.Add(new Event { Title = "Team Lunch", Date = "2026-09-20", Location = "Atlanta, GA", Description = "Casual team lunch.", ShareToken = Guid.NewGuid().ToString("N").Substring(0, 8) });
+        db.Events.Add(new Event { Title = "Birthday Party", Date = "2026-09-12", Location = "Snellville, GA", Description = "Flowers and butterflies theme!", ShareToken = Guid.NewGuid().ToString("N").Substring(0, 8) });
         db.SaveChanges();
     }
+
+    // Backfill: any existing event missing a share token gets one.
+    // (Covers events seeded before tokens existed, so old share links work.)
+    var tokenless = db.Events.Where(e => e.ShareToken == "" || e.ShareToken == null).ToList();
+    foreach (var ev in tokenless)
+    {
+        ev.ShareToken = Guid.NewGuid().ToString("N").Substring(0, 8);
+    }
+    if (tokenless.Count > 0) db.SaveChanges();
 }
 
 if (app.Environment.IsDevelopment())
@@ -205,6 +214,24 @@ app.MapDelete("/api/guests/{guestId}", async (int guestId, AppDbContext db) =>
     db.Guests.Remove(guest);
     await db.SaveChangesAsync();
     return Results.NoContent();
+});
+
+// -------------------------------------------------------------
+// PUT /api/guests/{guestId}/rsvp/{response}  →  set ONE guest's RSVP
+// {response} is "yes", "no", or "maybe". This is the "named" RSVP:
+// we record which specific guest responded what.
+// -------------------------------------------------------------
+app.MapPut("/api/guests/{guestId}/rsvp/{response}", async (int guestId, string response, AppDbContext db) =>
+{
+    if (response != "yes" && response != "no" && response != "maybe")
+        return Results.BadRequest("Response must be yes, no, or maybe.");
+
+    var guest = await db.Guests.FindAsync(guestId);
+    if (guest is null) return Results.NotFound();
+
+    guest.Rsvp = response;         // record this guest's answer by name
+    await db.SaveChangesAsync();
+    return Results.Ok(guest);
 });
 
 // -------------------------------------------------------------
