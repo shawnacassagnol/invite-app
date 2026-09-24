@@ -1,9 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Event } from './models';
+
+// One address suggestion from the Nominatim geocoder
+interface AddressSuggestion {
+  display_name: string;   // the full, formatted address
+}
 
 interface CalendarDay {
   day: number | null;
@@ -34,6 +39,11 @@ export class EventListComponent implements OnInit {
   newLocation = '';
   newDescription = '';
   showForm = false;
+
+  // ----- Location autocomplete -----
+  addressSuggestions: AddressSuggestion[] = [];
+  showSuggestions = false;
+  private debounceTimer: any = null;   // used to wait until the user stops typing
 
   constructor(private http: HttpClient) {}
 
@@ -91,11 +101,53 @@ export class EventListComponent implements OnInit {
     this.showForm = !this.showForm;
   }
 
+  // Called on every keystroke in the Location field.
+  // Debounced: we wait 350ms after typing stops before calling the API,
+  // so we don't fire a request on every single letter.
+  onLocationInput() {
+    clearTimeout(this.debounceTimer);
+
+    const query = this.newLocation.trim();
+    if (query.length < 3) {          // don't search on 1-2 characters
+      this.addressSuggestions = [];
+      this.showSuggestions = false;
+      return;
+    }
+
+    this.debounceTimer = setTimeout(() => {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=0&limit=5&q=${encodeURIComponent(query)}`;
+      this.http.get<AddressSuggestion[]>(url).subscribe({
+        next: (results) => {
+          this.addressSuggestions = results;
+          this.showSuggestions = results.length > 0;
+        }
+      });
+    }, 350);
+  }
+
+  // User clicked a suggestion → fill the field with the full address
+  selectAddress(suggestion: AddressSuggestion) {
+    this.newLocation = suggestion.display_name;
+    this.addressSuggestions = [];
+    this.showSuggestions = false;
+  }
+
+  // Close the dropdown when the user clicks anywhere outside the location field
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.location-autocomplete')) {
+      this.showSuggestions = false;
+    }
+  }
+
   resetForm() {
     this.newTitle = '';
     this.newDate = '';
     this.newLocation = '';
     this.newDescription = '';
+    this.addressSuggestions = [];
+    this.showSuggestions = false;
   }
 
   addEvent() {

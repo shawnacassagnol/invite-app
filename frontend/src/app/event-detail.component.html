@@ -36,7 +36,24 @@
       </div>
       <div class="form-group">
         <label>Location</label>
-        <input class="input" [(ngModel)]="editLocation">
+        <div class="location-autocomplete">
+          <input class="input"
+                 [(ngModel)]="editLocation"
+                 (ngModelChange)="onLocationInput()"
+                 (focus)="onLocationInput()"
+                 placeholder="Start typing an address..."
+                 autocomplete="off">
+
+          <!-- Suggestion dropdown -->
+          <ul *ngIf="showSuggestions" class="suggestion-list">
+            <li *ngFor="let s of addressSuggestions"
+                class="suggestion-item"
+                (click)="selectAddress(s)">
+              📍 {{ s.display_name }}
+            </li>
+          </ul>
+        </div>
+        <p class="field-hint">Pick a suggestion so the map shows the exact spot.</p>
       </div>
       <div class="form-group">
         <label>Description</label>
@@ -93,14 +110,38 @@
     <div *ngIf="!editing" class="panel panel-guests">
       <h3>👥 Guest List</h3>
 
+      <!-- RSVP summary across all named guests -->
+      <p *ngIf="guests.length > 0" class="rsvp-summary">
+        ✅ {{ rsvpCount('yes') }} yes ·
+        ❌ {{ rsvpCount('no') }} no ·
+        ❓ {{ rsvpCount('maybe') }} maybe ·
+        ⏳ {{ rsvpCount('pending') }} pending
+      </p>
+
       <div *ngFor="let g of guests" class="guest-row">
         <span class="guest-info">
           {{ g.name }}
           <span *ngIf="g.email" class="sub"> · {{ g.email }}</span>
           <span *ngIf="g.phone" class="sub"> · {{ g.phone }}</span>
           <span *ngIf="g.invited" class="invited"> ✅ invited</span>
+
+          <!-- Named RSVP status badge -->
+          <span class="rsvp-badge"
+                [class.rsvp-yes]="g.rsvp === 'yes'"
+                [class.rsvp-no]="g.rsvp === 'no'"
+                [class.rsvp-maybe]="g.rsvp === 'maybe'"
+                [class.rsvp-pending]="g.rsvp === 'pending'">
+            {{ g.rsvp }}
+          </span>
         </span>
-        <button class="btn btn-red btn-sm" (click)="deleteGuest(g.id)">Remove</button>
+
+        <!-- Per-guest RSVP buttons -->
+        <span class="guest-actions">
+          <button class="btn btn-green btn-sm" (click)="setGuestRsvp(g, 'yes')">Yes</button>
+          <button class="btn btn-red btn-sm" (click)="setGuestRsvp(g, 'no')">No</button>
+          <button class="btn btn-orange btn-sm" (click)="setGuestRsvp(g, 'maybe')">Maybe</button>
+          <button class="btn btn-gray btn-sm" (click)="deleteGuest(g.id)">Remove</button>
+        </span>
       </div>
       <p *ngIf="guests.length === 0" class="empty-msg">No guests added yet.</p>
 

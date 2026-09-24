@@ -25,7 +25,24 @@
     </div>
     <div class="form-group">
       <label>Location</label>
-      <input class="input" [(ngModel)]="newLocation" placeholder="e.g. Atlanta, GA">
+      <div class="location-autocomplete">
+        <input class="input"
+               [(ngModel)]="newLocation"
+               (ngModelChange)="onLocationInput()"
+               (focus)="onLocationInput()"
+               placeholder="Start typing an address..."
+               autocomplete="off">
+
+        <!-- Suggestion dropdown -->
+        <ul *ngIf="showSuggestions" class="suggestion-list">
+          <li *ngFor="let s of addressSuggestions"
+              class="suggestion-item"
+              (click)="selectAddress(s)">
+            📍 {{ s.display_name }}
+          </li>
+        </ul>
+      </div>
+      <p class="field-hint">Pick a suggestion so the map shows the exact spot.</p>
     </div>
     <div class="form-group">
       <label>Description</label>

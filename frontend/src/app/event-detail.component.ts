@@ -1,10 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Event, Guest, ScheduleItem } from './models';
+
+// One address suggestion from the Nominatim geocoder
+interface AddressSuggestion {
+  display_name: string;
+}
 
 @Component({
   selector: 'app-event-detail',
@@ -33,6 +38,11 @@ export class EventDetailComponent implements OnInit {
   editDate = '';
   editLocation = '';
   editDescription = '';
+
+  // ----- Location autocomplete (edit form) -----
+  addressSuggestions: AddressSuggestion[] = [];
+  showSuggestions = false;
+  private debounceTimer: any = null;
 
   // Map
   mapUrl: SafeResourceUrl | null = null;
@@ -151,6 +161,47 @@ export class EventDetailComponent implements OnInit {
 
   cancelEdit() {
     this.editing = false;
+    this.showSuggestions = false;
+    this.addressSuggestions = [];
+  }
+
+  // ----- Location autocomplete (same pattern as the add-event form) -----
+  // Debounced: waits 350ms after typing stops before calling the geocoder.
+  onLocationInput() {
+    clearTimeout(this.debounceTimer);
+
+    const query = this.editLocation.trim();
+    if (query.length < 3) {
+      this.addressSuggestions = [];
+      this.showSuggestions = false;
+      return;
+    }
+
+    this.debounceTimer = setTimeout(() => {
+      const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=0&limit=5&q=${encodeURIComponent(query)}`;
+      this.http.get<AddressSuggestion[]>(url).subscribe({
+        next: (results) => {
+          this.addressSuggestions = results;
+          this.showSuggestions = results.length > 0;
+        }
+      });
+    }, 350);
+  }
+
+  // User clicked a suggestion → fill the field with the full address
+  selectAddress(suggestion: AddressSuggestion) {
+    this.editLocation = suggestion.display_name;
+    this.addressSuggestions = [];
+    this.showSuggestions = false;
+  }
+
+  // Close the dropdown when clicking outside the location field
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.location-autocomplete')) {
+      this.showSuggestions = false;
+    }
   }
 
   saveEdit() {
@@ -209,6 +260,18 @@ export class EventDetailComponent implements OnInit {
     this.http.delete(`${this.backendUrl}/api/guests/${guestId}`).subscribe({
       next: () => this.guests = this.guests.filter(g => g.id !== guestId)
     });
+  }
+
+  // Set a specific guest's RSVP (named RSVP tracking)
+  setGuestRsvp(guest: Guest, response: string) {
+    this.http.put<Guest>(`${this.backendUrl}/api/guests/${guest.id}/rsvp/${response}`, {}).subscribe({
+      next: (updated) => guest.rsvp = updated.rsvp   // update the local guest's status
+    });
+  }
+
+  // Count how many guests are in a given RSVP state (for the summary line)
+  rsvpCount(status: string): number {
+    return this.guests.filter(g => g.rsvp === status).length;
   }
 
   sendInvites() {
