@@ -12,7 +12,9 @@ Built with an **Angular** frontend, a **.NET** backend, and a **SQLite** databas
 - **Two views** — a list view and an interactive monthly **calendar** where event days are highlighted
 - **Event detail pages** — each event has its own URL (`/event/1`) via Angular routing
 - **RSVP tracking** — guests respond Yes / No / Maybe, and counts are saved
+- **Named RSVP tracking** — track *which* guest responded what (yes/no/maybe/pending) with a per-guest status badge and a live summary, separate from the anonymous public count
 - **Guest lists** — add guests (name, email, phone) to each event, backed by a related database table
+- **Address autocomplete** — the location field suggests real, formatted addresses as you type (on both the add and edit forms), so the map always resolves to the exact spot
 - **Send invites** — mark all guests as invited (structured for real email/SMS integration later)
 - **Event schedules/agendas** — add, edit, and remove timeline items (e.g. "3:00 PM — Guests arrive") for each event
 - **Mini maps** — each event's location is geocoded and shown on an embedded OpenStreetMap (no API key required)
@@ -134,6 +136,7 @@ Go to [http://localhost:4200](http://localhost:4200).
 | GET | `/api/events/{id}/guests` | List an event's guests |
 | POST | `/api/events/{id}/guests` | Add a guest |
 | DELETE | `/api/guests/{guestId}` | Remove a guest |
+| PUT | `/api/guests/{guestId}/rsvp/{response}` | Set one guest's named RSVP (yes/no/maybe) |
 | POST | `/api/events/{id}/send-invites` | Mark all guests as invited |
 | GET | `/api/events/{id}/schedule` | List an event's schedule items |
 | POST | `/api/events/{id}/schedule` | Add a schedule item |
@@ -173,9 +176,10 @@ invite-app/
 - **One-to-many relationships** between database tables (Events → Guests)
 - **Angular routing** — multiple pages, route parameters, and navigation
 - **Component architecture** — splitting a single-page app into reusable page components
-- **Consuming external APIs** — geocoding and embedded maps
+- **Consuming external APIs** — geocoding, embedded maps, and debounced address autocomplete (waiting for a typing pause to respect the geocoder's rate limit)
 - **Handling browser security** — Angular's DomSanitizer for safe iframe embeds
 - **Share tokens & authorization** — unguessable public links and serving a *subset* of data with limited permissions (guest view vs. organizer view)
+- **Modeling data for the real question** — anonymous RSVP counts vs. named per-guest RSVPs are two different data shapes; the right one depends on whether you need to know *who* responded
 - **Separation of concerns** — clean HTML/CSS/TypeScript organization with CSS variables
 - **Full-stack integration** — connecting an Angular frontend to a .NET backend with CORS
 
@@ -185,4 +189,4 @@ invite-app/
 
 - Real email/SMS invite delivery (SendGrid / Twilio)
 - User accounts and authentication
-- Named RSVP tracking (which guest responded what)
+- Deploying a live demo (frontend + backend + a hosted database)
